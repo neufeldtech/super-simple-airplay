@@ -59,12 +59,13 @@ browser.on('serviceUp', function (service) {
         setInterval(function () {
           // Check every second if it is still playing
           isPlaying(service.host, service.port, function (stillPlaying) {
-            console.log(`Content playing: ${stillPlaying}`)
+            console.log(`${new Date} Content playing: ${stillPlaying}`)
             if (!stillPlaying) {
+              console.log("Looks like we're at the end of the video... closing connection")
               client.end()
             }
           })
-        }, 2500);
+        }, 10000);
       }, 10000)
     });
 
