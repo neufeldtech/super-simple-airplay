@@ -9,18 +9,18 @@ var streamContentLength = stream.length
 var contentLength = baseContentLength + streamContentLength;
 
 var isPlaying = function (host, port, callback) {
-	request(`http://${host}:${port}/playback-info`, function (err, res, body) {
-		if (err) throw err;
-		if (/\<key\>readyToPlay\<\/key\>\s+\<true\/>/g.test(body)) {
-			return callback(true);
-		} else {
-			return callback(false)
-		}
-	})
+  request(`http://${host}:${port}/playback-info`, function (err, res, body) {
+    if (err) throw err;
+    if (/\<key\>readyToPlay\<\/key\>\s+\<true\/>/g.test(body)) {
+      return callback(true);
+    } else {
+      return callback(false)
+    }
+  })
 }
 
 var body =
-	`POST /play HTTP/1.1
+  `POST /play HTTP/1.1
 User-Agent: MediaControl/1.0
 Content-Type: text/parameters
 X-Apple-Session-Id: 728239bb-a094-405e-8d90-b443c8f3093d
@@ -36,45 +36,45 @@ Start-Position: ${position}
 var started = false;
 
 var sequence = [
-	mdns.rst.DNSServiceResolve()
-	, mdns.rst.getaddrinfo({ families: [4] })
+  mdns.rst.DNSServiceResolve(),
+  mdns.rst.getaddrinfo({ families: [4] })
 ];
 
 var browser = mdns.createBrowser(mdns.tcp('airplay'), {resolverSequence: sequence});
 browser.on('serviceUp', function (service) {
-	console.log(`Found Device: ${service.host}`);
-	if (!started) {
-		started = true;
-		var client = new net.Socket();
+  console.log(`Found Device: ${service.host}`);
+  if (!started) {
+    started = true;
+    var client = new net.Socket();
 
-		client.connect(service.port, service.host, function () {
-			console.log('Connected');
-			client.write(body);
-		});
+    client.connect(service.port, service.host, function () {
+      console.log('Connected');
+      client.write(body);
+    });
 
-		client.on('data', function (data) {
-			console.log('Received: ' + data);
-			setTimeout(function () {
-				// give the stream 10 seconds to load
-				setInterval(function () {
-					// Check every second if it is still playing
-					isPlaying(service.host, service.port, function (stillPlaying) {
-						console.log(`Content playing: ${stillPlaying}`)
-						if (!stillPlaying) {
-							client.end()
-						}
-					})
-				}, 2500);
-			}, 10000)
-		});
+    client.on('data', function (data) {
+      console.log('Received: ' + data);
+      setTimeout(function () {
+        // give the stream 10 seconds to load
+        setInterval(function () {
+          // Check every second if it is still playing
+          isPlaying(service.host, service.port, function (stillPlaying) {
+            console.log(`Content playing: ${stillPlaying}`)
+            if (!stillPlaying) {
+              client.end()
+            }
+          })
+        }, 2500);
+      }, 10000)
+    });
 
-		client.on('close', function () {
-			console.log('Connection closed');
-			console.log('Exiting!')
-			process.exit(0)
-		});
+    client.on('close', function () {
+      console.log('Connection closed');
+      console.log('Exiting!')
+      process.exit(0)
+    });
 
-	}
+  }
 });
 
 browser.start();
