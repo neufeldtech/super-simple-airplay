@@ -35,21 +35,26 @@ Start-Position: ${position}
 
 var started = false;
 
-var browser = mdns.createBrowser(mdns.tcp('airplay'));
-browser.on('serviceUp', function(service) {
+var sequence = [
+	mdns.rst.DNSServiceResolve()
+	, mdns.rst.getaddrinfo({ families: [4] })
+];
+
+var browser = mdns.createBrowser(mdns.tcp('airplay'), {resolverSequence: sequence});
+browser.on('serviceUp', function (service) {
 	console.log(`Found Device: ${service.host}`);
 	if (!started) {
 		started = true;
 		var client = new net.Socket();
-		
+
 		client.connect(service.port, service.host, function () {
 			console.log('Connected');
 			client.write(body);
 		});
-		
+
 		client.on('data', function (data) {
 			console.log('Received: ' + data);
-			setTimeout(function(){
+			setTimeout(function () {
 				// give the stream 10 seconds to load
 				setInterval(function () {
 					// Check every second if it is still playing
@@ -62,7 +67,7 @@ browser.on('serviceUp', function(service) {
 				}, 2500);
 			}, 10000)
 		});
-		
+
 		client.on('close', function () {
 			console.log('Connection closed');
 			console.log('Exiting!')

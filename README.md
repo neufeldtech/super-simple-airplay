@@ -4,7 +4,9 @@ This is a minimalist airplay client that plays a given HLS stream on the first A
 
 ## Installation:
 
-**Requires [node.js](https://nodejs.org) v6 or higher**
+### Requirements
+- [node.js](https://nodejs.org) v6 or higher
+- multicast DNS support - see [mdns](https://www.npmjs.com/package/mdns) for additional dependencies you will need to satisfy if on Linux or Windows.
 
 ```
 git clone git@github.com:neufeldtech/super-simple-airplay.git
